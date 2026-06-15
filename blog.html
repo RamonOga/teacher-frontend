@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Блог · Учитель информатики</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <span class="nav-logo">// учитель</span>
+      <ul class="nav-links">
+        <li><a href="/">Главная</a></li>
+        <li><a href="/schedule">Расписание</a></li>
+        <li><a href="/materials">Материалы</a></li>
+        <li><a href="/hw">Д/з</a></li>
+        <li><a href="/blog" class="active">Блог</a></li>
+        <li><a href="/contacts">Контакты</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Блог и новости</h1>
+    <p class="page-desc">Анонсы, события, мысли об информатике и образовании.</p>
+
+    <section id="blog-posts">
+      <p class="page-desc">Загрузка...</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 · Маркелова Альбина Фаридовна · Учитель информатики</p>
+  </footer>
+
+  <script>
+    fetch('/api/blog')
+      .then(r => r.json())
+      .then(data => {
+        const section = document.getElementById('blog-posts');
+        section.innerHTML = data.map(p => '<article class="post">' +
+          '<h2>' + p.title + '</h2>' +
+          '<p class="post-meta">' + p.date + '</p>' +
+          '<p>' + p.excerpt + '</p>' +
+          '<a href="#">Читать →</a>' +
+          '</article>').join('');
+      })
+      .catch(() => {
+        document.getElementById('blog-posts').innerHTML = '<p class="page-desc">Не удалось загрузить записи блога.</p>';
+      });
+  </script>
+</body>
+</html>

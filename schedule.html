@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Расписание · Учитель информатики</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <span class="nav-logo">// учитель</span>
+      <ul class="nav-links">
+        <li><a href="/">Главная</a></li>
+        <li><a href="/schedule" class="active">Расписание</a></li>
+        <li><a href="/materials">Материалы</a></li>
+        <li><a href="/hw">Д/з</a></li>
+        <li><a href="/blog">Блог</a></li>
+        <li><a href="/contacts">Контакты</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Расписание</h1>
+    <p class="page-desc">Уроки, консультации, факультативы — всё в одном месте.</p>
+
+    <section class="schedule-grid" id="schedule-grid">
+      <p class="page-desc">Загрузка...</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 · Маркелова Альбина Фаридовна · Учитель информатики</p>
+  </footer>
+
+  <script>
+    fetch('/api/schedule')
+      .then(r => r.json())
+      .then(data => {
+        const days = ['Понедельник','Вторник','Среда','Четверг','Пятница'];
+        const grid = document.getElementById('schedule-grid');
+        grid.innerHTML = '';
+        days.forEach(day => {
+          const items = data.filter(s => s.day === day);
+          if (items.length === 0) return;
+          const card = document.createElement('div');
+          card.className = 'day-card';
+          card.innerHTML = '<h3>' + day + '</h3><ul>' +
+            items.map(s => '<li>' +
+              (s.time ? '<span class="time">' + s.time + '</span> ' : '') +
+              (s.group || '') +
+              (s.note ? ' <em>' + s.note + '</em>' : '') +
+              '</li>').join('') +
+            '</ul>';
+          grid.appendChild(card);
+        });
+      })
+      .catch(() => {
+        document.getElementById('schedule-grid').innerHTML = '<p class="page-desc">Не удалось загрузить расписание. Попробуйте позже.</p>';
+      });
+  </script>
+</body>
+</html>

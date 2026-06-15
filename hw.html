@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Домашние задания · Учитель информатики</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <span class="nav-logo">// учитель</span>
+      <ul class="nav-links">
+        <li><a href="/">Главная</a></li>
+        <li><a href="/schedule">Расписание</a></li>
+        <li><a href="/materials">Материалы</a></li>
+        <li><a href="/hw" class="active">Д/з</a></li>
+        <li><a href="/blog">Блог</a></li>
+        <li><a href="/contacts">Контакты</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Домашние задания</h1>
+    <p class="page-desc">Актуальные ДЗ по классам.</p>
+
+    <section class="hw-list" id="hw-list">
+      <p class="page-desc">Загрузка...</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 · Маркелова Альбина Фаридовна · Учитель информатики</p>
+  </footer>
+
+  <script>
+    fetch('/api/homework')
+      .then(r => r.json())
+      .then(data => {
+        const list = document.getElementById('hw-list');
+        list.innerHTML = data.map(h => '<div class="hw-item">' +
+          '<h3>' + h.group + '</h3>' +
+          '<p class="hw-date">' + h.deadline + '</p>' +
+          '<p>' + h.description + '</p>' +
+          '</div>').join('');
+      })
+      .catch(() => {
+        document.getElementById('hw-list').innerHTML = '<p class="page-desc">Не удалось загрузить домашние задания.</p>';
+      });
+  </script>
+</body>
+</html>

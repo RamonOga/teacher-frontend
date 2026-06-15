@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Материалы · Учитель информатики</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <span class="nav-logo">// учитель</span>
+      <ul class="nav-links">
+        <li><a href="/">Главная</a></li>
+        <li><a href="/schedule">Расписание</a></li>
+        <li><a href="/materials" class="active">Материалы</a></li>
+        <li><a href="/hw">Д/з</a></li>
+        <li><a href="/blog">Блог</a></li>
+        <li><a href="/contacts">Контакты</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Учебные материалы</h1>
+    <p class="page-desc">Презентации, конспекты, полезные ссылки.</p>
+
+    <section class="materials-list" id="materials-list">
+      <p class="page-desc">Загрузка...</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 · Маркелова Альбина Фаридовна · Учитель информатики</p>
+  </footer>
+
+  <script>
+    fetch('/api/materials')
+      .then(r => r.json())
+      .then(data => {
+        const list = document.getElementById('materials-list');
+        list.innerHTML = data.map(m => '<div class="material-item">' +
+          '<div><h3>' + m.title + '</h3><p>' + m.description + '</p></div>' +
+          '<a href="' + m.fileUrl + '">Скачать PDF →</a>' +
+          '</div>').join('');
+      })
+      .catch(() => {
+        document.getElementById('materials-list').innerHTML = '<p class="page-desc">Не удалось загрузить материалы.</p>';
+      });
+  </script>
+</body>
+</html>
