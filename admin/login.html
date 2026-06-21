@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход · Админка</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .box {
+      background: #14141c;
+      border: 1px solid #1e1e2e;
+      border-radius: 10px;
+      padding: 40px;
+      width: 380px;
+      max-width: 90vw;
+    }
+    h1 { font-size: 1.3rem; margin-bottom: 24px; text-align: center; color: #00d4ff; }
+    label { display: block; font-size: 0.85rem; color: #8888a0; margin-bottom: 4px; }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #1e1e2e;
+      border-radius: 6px;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    input:focus { border-color: #00d4ff; }
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      background: #00d4ff;
+      color: #000;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    button:hover { background: #00ff88; }
+    .error { color: #ff4444; font-size: 0.85rem; margin-top: 12px; text-align: center; }
+    .status { color: #00ff88; font-size: 0.85rem; text-align: center; margin-bottom: 16px; }
+    .mode-toggle {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 0.8rem;
+    }
+    .mode-toggle a {
+      color: #8888a0;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .mode-toggle a:hover { color: #00d4ff; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1 id="title">🔐 Вход в админку</h1>
+    <div id="statusMsg" class="status"></div>
+    <form id="authForm">
+      <div id="loginField">
+        <label for="login">Логин</label>
+        <input type="text" id="login" name="login" required>
+      </div>
+      <label for="password">Пароль</label>
+      <input type="password" id="password" name="password" required>
+      <div id="password2Field" style="display:none">
+        <label for="password2">Повторите пароль</label>
+        <input type="password" id="password2" name="password2">
+      </div>
+      <button type="submit" id="submitBtn">Войти</button>
+      <div class="error" id="error"></div>
+    </form>
+    <div class="mode-toggle">
+      <a id="modeLink" href="#" onclick="toggleMode()">Нет аккаунта? Создать</a>
+    </div>
+  </div>
+  <script>
+    let isSetup = false;
+
+    (async function() {
+      const token = localStorage.getItem('admin-token');
+      if (token) { window.location.href = '/admin/'; return; }
+      try {
+        const res = await fetch('/api/admin/status');
+        const data = await res.json();
+        if (data.setup === false) {
+          isSetup = true;
+          document.getElementById('title').textContent = '🔐 Первичная настройка';
+          document.getElementById('submitBtn').textContent = 'Создать пароль';
+          document.getElementById('password2Field').style.display = 'block';
+          document.getElementById('loginField').style.display = 'none';
+          document.getElementById('modeLink').style.display = 'none';
+        }
+      } catch(e) {
+        document.getElementById('statusMsg').textContent = '⚠ Нет связи с сервером';
+      }
+    })();
+
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const login = document.getElementById('login').value || 'admin';
+      const password = document.getElementById('password').value;
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = '';
+
+      if (isSetup) {
+        const p2 = document.getElementById('password2').value;
+        if (password !== p2) { errorEl.textContent = 'Пароли не совпадают'; return; }
+        if (password.length < 4) { errorEl.textContent = 'Пароль минимум 4 символа'; return; }
+        try {
+          const res = await fetch('/api/admin/setup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login, password })
+          });
+          const data = await res.json();
+          if (data.token) {
+            localStorage.setItem('admin-token', data.token);
+            window.location.href = '/admin/';
+          } else { errorEl.textContent = data.error || 'Ошибка'; }
+        } catch { errorEl.textContent = 'Ошибка подключения'; }
+      } else {
+        try {
+          const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login, password })
+          });
+          const data = await res.json();
+          if (data.token) {
+            localStorage.setItem('admin-token', data.token);
+            window.location.href = '/admin/';
+          } else { errorEl.textContent = 'Неверный логин или пароль'; }
+        } catch { errorEl.textContent = 'Ошибка подключения'; }
+      }
+    });
+
+    function toggleMode() {
+      isSetup = !isSetup;
+      if (isSetup) {
+        document.getElementById('title').textContent = '🔐 Первичная настройка';
+        document.getElementById('submitBtn').textContent = 'Создать пароль';
+        document.getElementById('password2Field').style.display = 'block';
+        document.getElementById('loginField').style.display = 'none';
+        document.getElementById('modeLink').textContent = 'Уже есть аккаунт? Войти';
+      } else {
+        document.getElementById('title').textContent = '🔐 Вход в админку';
+        document.getElementById('submitBtn').textContent = 'Войти';
+        document.getElementById('password2Field').style.display = 'none';
+        document.getElementById('loginField').style.display = 'block';
+        document.getElementById('modeLink').textContent = 'Нет аккаунта? Создать';
+      }
+    }
+  </script>
+</body>
+</html>
