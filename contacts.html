@@ -9,7 +9,7 @@
 <body>
   <nav class="navbar">
     <div class="nav-inner">
-      <span class="nav-logo">// учитель</span>
+      <button class="nav-toggle" aria-label="Меню">☰</button>
       <ul class="nav-links">
         <li><a href="/">Главная</a></li>
         <li><a href="/schedule">Расписание</a></li>
@@ -47,5 +47,11 @@
   <footer>
     <p>© 2026 · Маркелова Альбина Фаридовна · Учитель информатики</p>
   </footer>
+
+  <script>
+    document.querySelector('.nav-toggle')?.addEventListener('click', function() {
+      document.querySelector('.nav-links')?.classList.toggle('open');
+    });
+  </script>
 </body>
 </html>
