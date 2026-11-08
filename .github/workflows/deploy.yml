@@ -13,18 +13,18 @@ jobs:
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 167.17.180.127
-          username: root
+          host: 192.144.15.170
+          username: user33
           key: ${{ secrets.DEPLOY_KEY }}
-          source: "."
+          source: "index.html,blog.html,contacts.html,hw.html,materials.html,schedule.html,style.css,admin"
           target: "/opt/teacher/teacher-backend/frontend"
           strip_components: 0
 
       - name: Reload nginx
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 167.17.180.127
-          username: root
+          host: 192.144.15.170
+          username: user33
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             docker exec teacher-nginx nginx -s reload 2>/dev/null || docker restart teacher-nginx
